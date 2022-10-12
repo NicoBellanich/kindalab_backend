@@ -1,0 +1,17 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: views",
+            "type": "python",
+            "request": "launch",
+            "program": "kinda_backend/kinda_food_trucks/views.py",
+            "python": "C:/Users/nicol/Desktop/Reto Kindalab/kinda_backend/venv/Lib/site-packages/django/core/serializers/python.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
