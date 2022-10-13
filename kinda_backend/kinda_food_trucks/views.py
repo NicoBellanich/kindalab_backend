@@ -103,4 +103,12 @@ def calculate_closer_food_truck(req,st_number,st_name):
             shorter_distance = distance
             shorter_index = index
     shorter_distance = round(shorter_distance,2)
-    return HttpResponse(f"OKK, the shorter distance is {shorter_distance} km and the index is {shorter_index}")
+    
+    final_response = {
+        "closerKMDistance" : shorter_distance,
+        "initialLatitude" : lat,
+        "initialLongitude" : lon,
+        "finalLatitude" : trucks["latitude"][shorter_index],
+        "finalLongitude" : trucks["longitude"][shorter_index]
+    }
+    return JsonResponse(final_response,safe=False)
