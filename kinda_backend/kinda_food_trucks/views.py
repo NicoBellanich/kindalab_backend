@@ -9,6 +9,8 @@ import pandas as pd
 
 from .models import TruckModel
 
+import json
+
 def index(req):
     return HttpResponse("You're on the main page")
 
@@ -35,7 +37,7 @@ def get_other_api_trucks():
         raise Exception(type(e))
 
 def other_api_trucks(req):
-    return get_other_api_trucks()
+    return JsonResponse(json.loads(get_other_api_trucks().to_json(orient = 'records')),safe=False)
 
 def get_latitude_float(latitude):
     try:
