@@ -7,8 +7,8 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("all/", views.all_trucks, name="all"),
-    path("other_api", views.other_api_trucks, name="other"),
-    path("<int:truck_id>/", views.one_truck, name="by_id"),
+    path("all/", views.get_all_food_trucks_from_database, name="all"),
+    path("<int:food_truck_id>/", views.get_one_food_truck_by_id_from_database, name="by_id"),
+    path("sf_food_trucks", views.get_sf_food_trucks, name="other"),
     path("<int:st_number>/<str:st_name>", views.calculate_closer_food_truck, name="closer"),
 ]

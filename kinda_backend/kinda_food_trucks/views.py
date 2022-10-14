@@ -12,32 +12,29 @@ from .models import TruckModel
 import json
 
 def index(req):
-    return HttpResponse("You're on the main page")
+    return HttpResponse("You're getting default ../food_trucks/ endpoint response")
 
-def all_trucks(req):
-    #selected_truck = TruckModel.objects.filter()
-   
+def get_all_food_trucks_from_database(req):
     all_trucks = list(TruckModel.objects.all().values())
-    return JsonResponse(all_trucks, safe=False) # With safe=False it's no needed to do JsonResponse({"data": list(all_trucks)})
+    return JsonResponse(all_trucks, safe=False)
 
-
-def one_truck(req,truck_id):
+def get_one_food_truck_by_id_from_database(req,food_truck_id):
     try:
-        truck_found =model_to_dict(TruckModel.objects.get(pk=truck_id))
+        truck_found =model_to_dict(TruckModel.objects.get(pk=food_truck_id))
         return JsonResponse(truck_found, safe=False)
     
     except TruckModel.DoesNotExist:
-        raise Http404("No TruckModel matches the given query.")
+        raise Http404("No Food Truck matches the given ID.")
 
-def get_other_api_trucks():
+def get_sf_api_food_trucks():
     try:
         response= pd.read_json('https://data.sfgov.org/resource/rqzj-sfat.json')
         return response
     except Exception as e:
         raise Exception(type(e))
 
-def other_api_trucks(req):
-    return JsonResponse(json.loads(get_other_api_trucks().to_json(orient = 'records')),safe=False)
+def get_sf_food_trucks(req):
+    return JsonResponse(json.loads(get_sf_api_food_trucks().to_json(orient = 'records')),safe=False)
 
 def get_latitude_float(latitude):
     try:
@@ -94,7 +91,7 @@ def calculate_closer_food_truck(req,st_number,st_name):
     #return HttpResponse(f"the lat {lat} and the lon {lon}")
 
 
-    trucks = get_other_api_trucks()
+    trucks = get_sf_api_food_trucks()
     shorter_distance = 10000000000000
     shorter_index = 0
     coords_1 = (lat,lon)
