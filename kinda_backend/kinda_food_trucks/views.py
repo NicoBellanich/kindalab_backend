@@ -76,6 +76,23 @@ def get_sf_food_trucks(req):
     """
     return JsonResponse(json.loads(get_sf_api_food_trucks().to_json(orient = 'records')),safe=False)
 
+def calculate_closer_food_truck(req,st_number,st_name):
+    """
+    Calculate and returns closer food truck in San Francisco (California,USA) by a given street number and street name
+    
+    Arguments:
+        st_number: int
+        st_name: String
+    Returns:
+        JsonResponse
+    """
+    helperCloserFoodTruck = HelperCloserFoodTruck(st_number=st_number,st_name=st_name)
+
+    helperCloserFoodTruck.calculate_latitude_and_longitude_from_initial_st_name_and_st_number()
+
+    helperCloserFoodTruck.calculate_closer_food_truck_from_initial_lat_and_lon()
+
+    return JsonResponse(helperCloserFoodTruck.closer_food_truck_result,safe=False)
 
 class HelperCloserFoodTruck():
     """
@@ -138,20 +155,3 @@ class HelperCloserFoodTruck():
             "finalLongitude" : trucks["longitude"][shorter_index]
         }
 
-def calculate_closer_food_truck(req,st_number,st_name):
-    """
-    Calculate and returns closer food truck in San Francisco (California,USA) by a given street number and street name
-    
-    Arguments:
-        st_number: int
-        st_name: String
-    Returns:
-        JsonResponse
-    """
-    helperCloserFoodTruck = HelperCloserFoodTruck(st_number=st_number,st_name=st_name)
-
-    helperCloserFoodTruck.calculate_latitude_and_longitude_from_initial_st_name_and_st_number()
-
-    helperCloserFoodTruck.calculate_closer_food_truck_from_initial_lat_and_lon()
-
-    return JsonResponse(helperCloserFoodTruck.closer_food_truck_result,safe=False)
