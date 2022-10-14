@@ -36,78 +36,56 @@ def get_sf_api_food_trucks():
 def get_sf_food_trucks(req):
     return JsonResponse(json.loads(get_sf_api_food_trucks().to_json(orient = 'records')),safe=False)
 
-def get_latitude_float(latitude):
-    try:
-        latitude = float(latitude)
-    except ValueError:
-        return HttpResponseNotFound(
-            "'Latitude' must be convertible to an integer.")
-    return latitude
 
-def get_longitude_float(longitude):
-    try:
-        longitude = float(longitude)
-    except ValueError:
-        return HttpResponseNotFound(
-            "'Longitude' must be convertible to an integer.")
-    return longitude
+class HelperCloserFoodTruck():
+    def __init__(self,st_name,st_number):
+        self._st_name = st_name
+        self._st_number = st_number
+        self._address = str(st_number)+ " " + st_name + " San Francisco"
+        self._address = self._address.replace(" ", "%20")
+        self._url = 'https://nominatim.openstreetmap.org/search/' + self._address +'?format=json'
 
-def check_latitude_and_longitude(latitude,longitude):
-    print(latitude)
-    if latitude < -90 or latitude > 90:
-        raise HttpResponseNotFound(
-            "'Latitude' must be betweeen -90 and 90 boundaries.")
-    print(longitude)
-    if longitude < -180 or longitude > 180:
-        raise HttpResponseNotFound(
-            "'Longitude' must be betweeen -90 and 90 boundaries.")
+    def calculate_latitude_and_longitude_from_initial_st_name_and_st_number(self):
+        try:
+            response =  pd.read_json(self._url)
+            response = response[response['display_name'].str.lower().str.contains("san francisco")]
+            frist_one_approach = 0
+            lat = response.iloc[frist_one_approach]["lat"]
+            lon = response.iloc[frist_one_approach]["lon"]
+            self._lat = lat
+            self._lon = lon
+        
+        except Exception as e:
+            raise Exception(type(e))
+
+    def calculate_closer_food_truck_from_initial_lat_and_lon(self):
+        
+        trucks = get_sf_api_food_trucks()
+        shorter_distance = 10000000000000
+        shorter_index = 0
+        coords_1 = (self._lat,self._lon)
+        for index in trucks.index:
+            coords_2 = (trucks["latitude"][index],trucks["longitude"][index])
+            distance = geopy.distance.geodesic(coords_1, coords_2).km
+            if distance < shorter_distance:
+                shorter_distance = distance
+                shorter_index = index
+        shorter_distance = round(shorter_distance,2)
+        
+        self.closer_food_truck_result = {
+            "closerKMDistance" : shorter_distance,
+            "initialLatitude" : self._lat,
+            "initialLongitude" : self._lon,
+            "finalLatitude" : trucks["latitude"][shorter_index],
+            "finalLongitude" : trucks["longitude"][shorter_index]
+        }
 
 def calculate_closer_food_truck(req,st_number,st_name):
 
-    # latitude = get_latitude_float(latitude=latitude)
-    # longitude = get_longitude_float(longitude=longitude)
-    
-    # print("LAT",latitude)
-    # print("LONG",longitude)
-    
-    #TODO
-    #check_latitude_and_longitude(latitude=latitude,longitude=longitude)
+    helperCloserFoodTruck = HelperCloserFoodTruck(st_number=st_number,st_name=st_name)
 
-    address = str(st_number)+ " " + st_name + " San Francisco"
-    address = address.replace(" ", "%20")
-    url = 'https://nominatim.openstreetmap.org/search/' + address +'?format=json'
+    helperCloserFoodTruck.calculate_latitude_and_longitude_from_initial_st_name_and_st_number()
 
-    try:
-        response =  pd.read_json(url)
-        response = response[response['display_name'].str.lower().str.contains("san francisco")]
-        frist_one_approach = 0
-        lat = response.iloc[frist_one_approach]["lat"]
-        lon = response.iloc[frist_one_approach]["lon"]
+    helperCloserFoodTruck.calculate_closer_food_truck_from_initial_lat_and_lon()
 
-    except Exception as e:
-        raise Exception(type(e))
-
-    # TO KNOW LAT AND LONG OF FOOD TRUCK FROM ST NUMBER AND ST NAME
-    #return HttpResponse(f"the lat {lat} and the lon {lon}")
-
-
-    trucks = get_sf_api_food_trucks()
-    shorter_distance = 10000000000000
-    shorter_index = 0
-    coords_1 = (lat,lon)
-    for index in trucks.index:
-        coords_2 = (trucks["latitude"][index],trucks["longitude"][index])
-        distance = geopy.distance.geodesic(coords_1, coords_2).km
-        if distance < shorter_distance:
-            shorter_distance = distance
-            shorter_index = index
-    shorter_distance = round(shorter_distance,2)
-    
-    final_response = {
-        "closerKMDistance" : shorter_distance,
-        "initialLatitude" : lat,
-        "initialLongitude" : lon,
-        "finalLatitude" : trucks["latitude"][shorter_index],
-        "finalLongitude" : trucks["longitude"][shorter_index]
-    }
-    return JsonResponse(final_response,safe=False)
+    return JsonResponse(helperCloserFoodTruck.closer_food_truck_result,safe=False)
